@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<a href="/gen_docx_rapport/{{question.id_mission}}">Docx</a>
+<a href="/gen_tex_rapport/{{question.id_mission}}">Latex</a>
+<a href="/gen_pdf_rapport/{{question.id_mission}}">PDF</a>
+
+<h2>{{ question.questions.question }}</h2>
+<form method="POST" enctype="multipart/form-data" action="/questionnaire/{{question.id_mission}}/{{question.id_question+1}}">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.evaluation.label(class="form-label") }}
+        <select class="form-control" id="evaluation" name="evaluation">
+            <option value="0" {{ 'selected' if reponse and reponse.evaluation == 0 else '' }}>Mesures non évaluable</option>
+            <option value="1" {{ 'selected' if reponse and reponse.evaluation == 1 else '' }}>Mesures inexistantes</option>
+            <option value="2" {{ 'selected' if reponse and reponse.evaluation == 2 else '' }}>Mesures en cours de réflexion</option>
+            <option value="3" {{ 'selected' if reponse and reponse.evaluation == 3 else '' }}>Mesures en cours d’implémentation</option>
+            <option value="4" {{ 'selected' if reponse and reponse.evaluation == 4 else '' }}>Mesures implémentées</option>
+            <option value="5" {{ 'selected' if reponse and reponse.evaluation == 5 else '' }}>Mesures implémentées avec procédures associées</option>
+        </select>
+    </div>
+    <div class="form-group">
+        {{ form.reponse.label(class="form-label", title="Donner des détails sur l'évaluation") }}
+        <textarea class="form-control" id="reponse" name="reponse" required="">{{ reponse.reponse if reponse else '' }}</textarea>
+    </div>
+    <div class="form-group">
+        {{ form.piece_jointe.label(class="form-label") }}
+        {{ form.piece_jointe(class="form-control") }}
+    </div>
+
+    <h3>Recommandations déjà ajoutées</h3>
+    <ul id="existing-recommandations">
+        {% for rec_audit in recommandations_audit %}
+            <li>{{ rec_audit.titre_reco }} <a href="/api/del/recodaudit/{{question.id_mission}}/{{rec_audit.id_recommandation}}/">❌</a></li>
+        {% endfor %}
+    </ul>
+
+    <h3>Ajouter une nouvelle recommandation</h3>
+    <div class="form-group">
+        <label for="recommandations-list" class="form-label">Sélectionner une recommandation</label>
+        <select id="recommandations-list" class="form-control">
+            <!-- Les recommandations seront insérés ici par JavaScript -->
+        </select>
+        <button type="button" class="btn btn-secondary" id="add-recommandation">Ajouter la recommandation</button>
+    </div>
+
+    <div class="form-group">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch('/api/recommandations')
+            .then(response => response.json())
+            .then(data => {
+                const recommandationsList = document.getElementById('recommandations-list');
+                data.forEach(recommandation => {
+                    const option = document.createElement('option');
+                    option.value = recommandation.id_recommandation;
+                    option.textContent = recommandation.titre_reco;
+                    recommandationsList.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching recommandations:', error));
+    
+        document.getElementById('add-recommandation').addEventListener('click', function() {
+            const selectedRecommandationId = document.getElementById('recommandations-list').value;
+            const id_mission = {{ question.id_mission }};
+            const id_question = {{ question.id_question }};
+    
+            // Construire l'URL pour la requête POST
+            const url = `/api/ajout/recodaudit/${id_mission}/${id_question}/${selectedRecommandationId}`;
+    
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload(); // Recharge la page pour mettre à jour la liste
+                } else {
+                    alert('Erreur lors de l\'ajout de la recommandation');
+                }
+            }).catch(error => console.error('Erreur:', error));
+        });
+    });
+    </script>
+    
+
+
+{% endblock %}

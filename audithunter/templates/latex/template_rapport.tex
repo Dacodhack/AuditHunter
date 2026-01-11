@@ -1,0 +1,173 @@
+\documentclass[12pt]{extarticle}
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[table]{xcolor}
+\usepackage[most]{tcolorbox}
+\geometry{
+    left=1cm,
+    right=1cm,
+    top=1cm,
+    bottom=1cm
+}
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \fancyfoot[C]{\thepage}
+}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\thepage}
+\centering
+\fancyhead[R]{Ce document est une propriété privée et confidentielle. Toute diffusion non autorisée est interdite.}
+\flushleft
+\begin{document}
+
+% ====================
+% PAGE DE GARDE
+% ====================
+\begin{titlepage}
+\centering
+\vspace*{4cm}
+
+{\LARGE \textbf{Rapport d’audit de sécurité}}\\[0.5cm]
+{\Large Conforme au référentiel PASSI (ANSSI)}\\[2cm]
+
+\textbf{Mission :} {{ mission.mission }}\\
+\textbf{Client :} {{ mission.client_company }}\\
+\textbf{Date :} \today\\[2cm]
+
+\vfill
+\textit{Ce rapport est confidentiel et destiné exclusivement au commanditaire.}
+\end{titlepage}
+
+\newpage
+
+% ====================
+% TABLE DES MATIÈRES
+% ====================
+\tableofcontents
+\newpage
+
+% ====================
+% 1. CONTEXTE
+% ====================
+\section{Contexte et objectifs}
+\label{sec:contexte}
+
+Ce rapport présente les résultats de la mission d’audit de sécurité réalisée
+dans le cadre du référentiel PASSI défini par l’ANSSI.
+
+Les objectifs de la mission sont :
+\begin{itemize}
+\item Évaluer le niveau de sécurité du périmètre audité
+\item Identifier les écarts vis-à-vis du référentiel
+\item Formuler des recommandations adaptées
+\end{itemize}
+
+% ====================
+% 2. PÉRIMÈTRE
+% ====================
+\section{Périmètre de la mission}
+\label{sec:perimetre}
+
+Le périmètre de l’audit couvre les domaines et chapitres décrits ci-après.
+
+% ====================
+% 3. MÉTHODOLOGIE
+% ====================
+\section{Méthodologie et référentiel}
+\label{sec:methodo}
+
+La mission a été conduite conformément aux exigences du PASSI :
+\begin{itemize}
+\item Analyse documentaire
+\item Entretiens
+\item Vérifications techniques
+\item Évaluation qualitative et quantitative
+\end{itemize}
+
+% ====================
+% 4. SYNTHÈSE DES ÉVALUATIONS
+% ====================
+\section{Synthèse des évaluations}
+\label{sec:synthese}
+
+\begin{longtable}{p{6cm} c c}
+\toprule
+\textbf{Chapitre} & \textbf{Score} & \textbf{Lien} \\
+\midrule
+{% for domaine in domaines %}
+{% for chapitre in domaine.chapitres %}
+{{ chapitre.chapitre }} &
+{{ chapitre.score_moyen }} &
+\hyperref[chapitre:{{ chapitre.id_chapitre }}]{Voir} \\
+{% endfor %}
+{% endfor %}
+\bottomrule
+\end{longtable}
+
+% ====================
+% 5. RÉSULTATS DÉTAILLÉS
+% ====================
+\section{Résultats détaillés}
+\label{sec:resultats}
+
+{% for domaine in domaines %}
+\subsection{Domaine : {{ domaine.domaine }}}
+\label{domaine:{{ domaine.id_domaine }}}
+
+{% for chapitre in domaine.chapitres %}
+\subsubsection{Chapitre : {{ chapitre.chapitre }}}
+\label{chapitre:{{ chapitre.id_chapitre }}}
+
+{% for q in chapitre.questions %}
+
+\label{eval:{{ chapitre.id_chapitre }}:{{ loop.index }}}
+{Question :} {{ q.question }}
+% Peut être rajouter une description plus tard qui explique le contexte de la question ? 
+{{ q.reponse }}
+{{ q.objectif }}
+
+{% if q.piece_jointe %}
+\paragraph{Éléments de preuve}
+\includegraphics[scale=0.5]{ {{- q.piece_jointe -}} }
+
+
+\paragraph{Évaluation}
+\textbf{Score :} {{ q.evaluation }} — \score{{ q.evaluation }}
+
+
+{% endif %}
+
+\medskip
+{% endfor %}
+
+{% endfor %}
+{% endfor %}
+
+% ====================
+% 6. CONCLUSION
+% ====================
+\section{Conclusion}
+\label{sec:conclusion}
+
+L’audit met en évidence des axes d’amélioration prioritaires pour renforcer
+le niveau de sécurité global du périmètre audité.
+
+% ====================
+% ANNEXES
+% ====================
+\appendix
+\section{Glossaire}
+PASSI : Prestataires d’Audit de la Sécurité des Systèmes d’Information.
+
+\end{document}
